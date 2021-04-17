@@ -239,7 +239,7 @@ def write_header_and_data_to_file(header, data, output_filename):
         output_file.write(header)
         for d in data:
             output_file.write(d)
-    logger.info(f'{len(d)} lines of output written to: {output_filename}.')
+    logger.info(f'{len(data)} lines of output written to: {output_filename}.')
 
 
 def check_mode(input_filepath):
@@ -285,7 +285,8 @@ def main(input_path='./input_data/piranhas.txt'):
                     header = get_lexical_data_header_string(lca_result, l2sca_result)
 
                 lex_data.append(get_lexical_data_string(lca_result, l2sca_result))
-                write_header_and_data_to_file(header, lex_data, os.path.join(os.getcwd(), './output/out.csv'))
+
+        write_header_and_data_to_file(header, lex_data, os.path.join(os.getcwd(), './output/out.csv'))
 
     process_result_array(result_array)
     logger.info('Autograder Complete.')
