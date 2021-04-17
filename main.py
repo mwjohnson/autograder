@@ -1,13 +1,23 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import io
+import os
+import csv
+import sys
 import logging
-from timeit import default_timer
 import functools
+from pathlib import Path
+from timeit import default_timer
+
 from L2SCA import analyzeText4 as analyzeText
 from lca import lc_anc3 as lc_anc
 
-logging.basicConfig()
-logger = logging.getLogger(__name__)
+
+logger = logging.getLogger('autograder')
+handler = logging.StreamHandler()
+formatter = logging.Formatter('%(name)s(%(levelname)s):%(module)s.%(funcName)s[%(lineno)d]: %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 logger.setLevel(level=logging.INFO)
 
 
@@ -33,7 +43,6 @@ def timer_decorator(func_to_time):
     return wrapper_timer
 
 
-@timer_decorator
 def process_variables(lca_res, l2sca_res):
     """
     lca_res = {'filename': 'dickhole.txt', 'wordtypes': 59, 'swordtypes': 59, 'lextypes': 3, 'slextypes': 3, 'wordtokens': 72,
@@ -145,38 +154,142 @@ def process_lca(lemlines, input_filename, wordranks, adjdict):
 
 
 @timer_decorator
-def process_l2sca(input_file, lexparser_path, tregex_path):
-    l2sca_result = analyzeText.main(input_file, lexparser_path, tregex_path)
+def process_l2sca(input_file, lexparser_path, tregex_path, write_output_file):
+    l2sca_result = analyzeText.main(input_file, lexparser_path, tregex_path, write_output_file)
     return l2sca_result
 
 
 @timer_decorator
 def preprocess(anc_all_count_filepath):
     wordranks, adjdict = lc_anc.process_wordrank(anc_all_count_filepath)
+    logger.info(f'{anc_all_count_filepath} data loaded.')
     return wordranks, adjdict
 
 
-@timer_decorator
 def read_input_text(filename):
     with open(filename, 'r') as f:
-        lemlines = f.readlines()
-    return lemlines
+        text_lines = f.readlines()
+    logger.info(f'Read file: {filename} - {len(text_lines)} lines read.')
+    return text_lines
 
 
-def main():
-    # pre-process the word ranks.
-    wordranks, adjdict = preprocess('./lca/anc_all_count.txt')
-    input_file = './input_data/moon.txt'
+def get_lexical_data_string(lca_result, l2sca_result):
+    """
+    Get the lca_string from lca_result.
+    Get the l2sca_string from l2sca_result.
+    Concatenate those two strings together with a comma "," and return the resulting string.
+    :param lca_result:
+    :param l2sca_result:
+    :return:
+    """
 
-    lemlines = read_input_text(input_file)
+    with io.StringIO() as lca_csv:
+        writer = csv.DictWriter(lca_csv, fieldnames=lca_result.keys())
+        writer.writerow(lca_result)
+        lca_string = lca_csv.getvalue().rstrip()
 
-    lca_result = process_lca(lemlines, 'dickhole.txt', wordranks, adjdict)
-    l2sca_result = process_l2sca(input_file, "./L2SCA/stanford-parser-full-2014-01-04/lexparser.sh","./L2SCA/tregex.sh")
+    with io.StringIO() as l2sca_csv:
+        writer = csv.DictWriter(l2sca_csv, fieldnames=l2sca_result.keys())
+        writer.writerow(l2sca_result)
+        l2sca_string = l2sca_csv.getvalue()
 
-    result_array = process_variables(lca_result, l2sca_result)
-    print(result_array)
+    lex_data = lca_string+','+l2sca_string
+    return lex_data
+
+
+def get_lexical_data_header_string(lca_result, l2sca_result):
+    """
+    Get the Header string from lca_result.
+    Get the Header string from l2sca_result.
+    Concatenate those two strings together with a comma "," and return the resulting string.
+    :param lca_result:
+    :param l2sca_result:
+    :return: One combined string of the lca_header and l2sca_header in csv format.
+    """
+    with io.StringIO() as lca_csv:
+        writer = csv.DictWriter(lca_csv, fieldnames=lca_result.keys())
+        writer.writeheader()
+        lca_header = lca_csv.getvalue().rstrip()
+
+    with io.StringIO() as l2sca_csv:
+        writer = csv.DictWriter(l2sca_csv, fieldnames=l2sca_result.keys())
+        writer.writeheader()
+        l2sca_header = l2sca_csv.getvalue()
+
+    return lca_header+','+l2sca_header
+
+
+def write_string_to_file(string, output_filename):
+    with open(output_filename, 'w', encoding='utf8') as output_file:
+        output_file.write(string)
+    logger.info(f'{output_filename} written to disk.')
+
+
+def write_header_and_data_to_file(header, data, output_filename):
+    """
+
+    :type header - a string.
+    :param header:
+    :type data - list of strings.
+    :param data:
+    :param output_filename:
+    :return:
+    """
+    with open(output_filename, 'w', encoding='utf8') as output_file:
+        output_file.write(header)
+        for d in data:
+            output_file.write(d)
+    logger.info(f'{len(d)} lines of output written to: {output_filename}.')
+
+
+def check_mode(input_filepath):
+    assert os.path.exists(input_filepath), f'{input_filepath} does not exist.'
+    if os.path.isdir(input_filepath):
+        mode = 'directory'
+    elif os.path.isfile(input_filepath):
+        mode = 'file'
+    else:
+        assert False, f'{input_filepath} is not a file nor a directory.'
+    logger.info(f'{mode} mode recognized. Loading data from: {input_filepath}')
+    return mode
+
+
+@timer_decorator
+def main(input_path='./input_data/piranhas.txt'):
+    wordranks, adjdict = preprocess('./lca/anc_all_count.txt')  # pre-process the word ranks.
+
+    input_filepath = os.path.join(os.getcwd(), input_path)
+    mode = check_mode(input_filepath)
+
+    if mode == 'file':
+        text_lines = read_input_text(input_path)
+        lca_result = process_lca(text_lines, Path(input_path).name, wordranks, adjdict)
+        l2sca_result = process_l2sca(input_path, "./L2SCA/stanford-parser-full-2014-01-04/lexparser.sh", "./L2SCA/tregex.sh", False)
+        result_array = process_variables(lca_result, l2sca_result)
+        header = get_lexical_data_header_string(lca_result, l2sca_result)
+        lex_data = get_lexical_data_string(lca_result, l2sca_result)
+        write_string_to_file(header+lex_data, f'./output/{Path(input_path).name}.out.csv')
+
+    if mode == 'directory':
+        header = None
+        lex_data = []
+        for fdx, filename in enumerate(os.listdir(input_filepath)):
+            if filename.endswith('.txt'):
+                text_lines = read_input_text(os.path.join(input_filepath, filename))
+                lca_result = process_lca(text_lines, Path(filename).name, wordranks, adjdict)
+                l2sca_result = process_l2sca(filename, "./L2SCA/stanford-parser-full-2014-01-04/lexparser.sh",
+                                             "./L2SCA/tregex.sh", False)
+                result_array = process_variables(lca_result, l2sca_result)
+
+                if fdx == 0:
+                    header = get_lexical_data_header_string(lca_result, l2sca_result)
+
+                lex_data.append(get_lexical_data_string(lca_result, l2sca_result))
+                write_header_and_data_to_file(header, lex_data, os.path.join(os.getcwd(), './output/out.csv'))
+
     process_result_array(result_array)
+    logger.info('Autograder Complete.')
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1])

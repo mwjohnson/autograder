@@ -121,7 +121,7 @@ def main(lemlines, filename, wordranks, adjdict):
     swordtypes = {}
     swordtokens = 0
     lextypes = {}
-    lextokens = 0
+    lextokens = 1
     slextypes = {}
     slextokens = 0
     verbtypes = {}
@@ -132,7 +132,7 @@ def main(lemlines, filename, wordranks, adjdict):
     advtypes = {}
     advtokens = 0
     nountypes = {}
-    nountokens = 0
+    nountokens = 1
     lemmaposlist = []
     lemmalist = []
 

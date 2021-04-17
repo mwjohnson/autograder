@@ -30,10 +30,6 @@ import subprocess
 import sys
 import logging
 
-logging.basicConfig()
-logger = logging.getLogger(__name__)
-logger.setLevel(level=logging.INFO)
-
 
 def division(x, y):
     """
@@ -150,8 +146,7 @@ def run_standford_lex_parser(parser_path, i_filename, parsed_file):
                    "edu.stanford.nlp.parser.lexparser.LexicalizedParser", "-outputFormat", "penn",
                    "edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz", i_filename, ">", parsed_file]
     else:
-        # command = parser_path + " " + i_filename + " > " + parsed_file
-        command = [parser_path, i_filename, ">", parsed_file]
+        command = parser_path + " " + i_filename + " > " + parsed_file
     a = subprocess.getoutput(command).split('\n')[-1].split()
 
 
@@ -166,14 +161,17 @@ def write_output_file(i_filename, w, patterncount, statistics_list):
     for ratio in statistics_list:
         output += "," + str("%.4F" % ratio)
 
-    with open(i_filename + '.out', 'w') as f:
+    with open(i_filename + '.l2sca.out', 'w') as f:
         f.write(fields + "\n" + output + "\n")
+    logger = logging.getLogger('autograder')
+    logger.info(f'remove: {i_filename}+.l2sca.out')
 
 
 def remove_temporary_parsed_file(parsed_file):
     # delete the temporary file holding the parse trees
     if os.path.exists(parsed_file) and os.getcwd() in os.path.abspath(parsed_file) and parsed_file.endswith('.parsed'):
-        print('remove: ' + parsed_file)
+        logger = logging.getLogger('autograder')
+        logger.info(f'remove: {parsed_file}')
         os.remove(parsed_file)
 
 
@@ -194,8 +192,7 @@ def main(i_filename, parser_path="stanford-parser-full-2014-01-04/lexparser.sh",
             command = ["java", "-mx100m", "-classpath", "L2SCA/stanford-tregex.jar;", "edu.stanford.nlp.trees.tregex.TregexPattern", pattern,
                        parsed_file, "-C", "-o"]
         else:
-            # command = tregex_path + " " + pattern + " " + parsed_file + " -C -o"
-            command = [tregex_path, pattern, parsed_file, "-C", "-o"]
+            command = tregex_path + " " + pattern + " " + parsed_file + " -C -o"
 
         count = subprocess.getoutput(command).split('\n')[-1]
         patterncount.append(int(count))
