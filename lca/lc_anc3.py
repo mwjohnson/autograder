@@ -114,7 +114,6 @@ def process_wordrank(anc_all_filename="anc_all_count.txt"):
 
 
 def main(lemlines, filename, wordranks, adjdict):
-
     # process input file
     wordtypes = {}
     wordtokens = 0
@@ -150,7 +149,7 @@ def main(lemlines, filename, wordranks, adjdict):
                 lemmalist.append(word)
                 wordtokens += 1
                 wordtypes[word] = 1
-                if (not word in wordranks[-2000:]) and pos != "cd":
+                if word not in wordranks[:2000] and pos != "cd":
                     swordtypes[word] = 1
                     swordtokens += 1
                 if pos[0] == "n":
@@ -158,7 +157,7 @@ def main(lemlines, filename, wordranks, adjdict):
                     nountypes[word] = 1
                     lextokens += 1
                     nountokens += 1
-                    if not word in wordranks[-2000:]:
+                    if word not in wordranks[:2000]:
                         slextypes[word] = 1
                         slextokens += 1
                 elif pos[0] == "j":
@@ -166,7 +165,7 @@ def main(lemlines, filename, wordranks, adjdict):
                     adjtypes[word] = 1
                     lextokens += 1
                     adjtokens += 1
-                    if not word in wordranks[-2000:]:
+                    if word not in wordranks[:2000]:
                         slextypes[word] = 1
                         slextokens += 1
                 elif pos[0] == "r" and (word in adjdict or (word[-2:] == "ly" and word[:-2] in adjdict)):
@@ -174,7 +173,7 @@ def main(lemlines, filename, wordranks, adjdict):
                     advtypes[word] = 1
                     lextokens += 1
                     advtokens += 1
-                    if not word in wordranks[-2000:]:
+                    if word not in wordranks[:2000]:
                         slextypes[word] = 1
                         slextokens += 1
                 elif pos[0] == "v" and word not in ["be", "have"]:
@@ -182,7 +181,7 @@ def main(lemlines, filename, wordranks, adjdict):
                     verbtokens += 1
                     lextypes[word] = 1
                     lextokens += 1
-                    if word not in wordranks[-2000:]:
+                    if word not in wordranks[:2000]:
                         sverbtypes[word] = 1
                         slextypes[word] = 1
                         slextokens += 1
