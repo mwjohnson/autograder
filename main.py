@@ -275,10 +275,10 @@ def main(input_path='./input_data/piranhas.txt'):
         lex_data = []
         for fdx, filename in enumerate(os.listdir(input_filepath)):
             if filename.endswith('.txt'):
-                text_lines = read_input_text(os.path.join(input_filepath, filename))
+                file_path = os.path.join(input_filepath, filename)
+                text_lines = read_input_text(file_path)
                 lca_result = process_lca(text_lines, Path(filename).name, wordranks, adjdict)
-                l2sca_result = process_l2sca(filename, "./L2SCA/stanford-parser-full-2014-01-04/lexparser.sh",
-                                             "./L2SCA/tregex.sh", False)
+                l2sca_result = process_l2sca(file_path, "./L2SCA/stanford-parser-full-2014-01-04/lexparser.sh", "./L2SCA/tregex.sh", False)
                 result_array = process_variables(lca_result, l2sca_result)
 
                 if fdx == 0:

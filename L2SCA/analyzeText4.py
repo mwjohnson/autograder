@@ -147,6 +147,7 @@ def run_standford_lex_parser(parser_path, i_filename, parsed_file):
                    "edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz", i_filename, ">", parsed_file]
     else:
         command = parser_path + " " + i_filename + " > " + parsed_file
+        
     a = subprocess.getoutput(command).split('\n')[-1].split()
 
 
@@ -181,6 +182,7 @@ def main(i_filename, parser_path="stanford-parser-full-2014-01-04/lexparser.sh",
     else:
         pattern_list = initialize_pattern_list()
 
+    assert os.path.isfile(i_filename), f'input file {i_filename} not found.'
     # name a temporary file to hold the parse trees of the input file
     parsed_file = i_filename + ".parsed"
 
