@@ -148,8 +148,8 @@ def process_result_array(result_array):
 
 
 @timer_decorator
-def process_lca(lemlines, input_filename, wordranks, adjdict):
-    lca_result = lc_anc.main(lemlines, input_filename, wordranks, adjdict)
+def process_lca(lemlines, input_filename):
+    lca_result = lc_anc.main(lemlines, input_filename)
     return lca_result
 
 
@@ -161,13 +161,13 @@ def process_l2sca(input_file, lexparser_path, tregex_path, write_output_file):
 
 @timer_decorator
 def preprocess(anc_all_count_filepath):
-    wordranks, adjdict = lc_anc.process_wordrank(anc_all_count_filepath)
+    wordranks, adjdict, pos_lookup = lc_anc.process_wordrank(anc_all_count_filepath)
     logger.info(f'{anc_all_count_filepath} data loaded.')
-    return wordranks, adjdict
+    return wordranks, adjdict, pos_lookup
 
 
 def read_input_text(filename):
-    with open(filename, 'r') as f:
+    with open(filename, 'r', encoding='utf8') as f:
         text_lines = f.readlines()
     logger.info(f'Read file: {filename} - {len(text_lines)} lines read.')
     return text_lines
@@ -256,14 +256,14 @@ def check_mode(input_filepath):
 
 @timer_decorator
 def main(input_path='./input_data/piranhas.txt'):
-    wordranks, adjdict = preprocess('./lca/anc_all_count.txt')  # pre-process the word ranks.
+#    wordranks, adjdict, pos_lookup = preprocess('./lca/anc_all_count.txt')  # pre-process the word ranks.
 
     input_filepath = os.path.join(os.getcwd(), input_path)
     mode = check_mode(input_filepath)
 
     if mode == 'file':
         text_lines = read_input_text(input_path)
-        lca_result = process_lca(text_lines, Path(input_path).name, wordranks, adjdict)
+        lca_result = process_lca(text_lines, Path(input_path).name, wordranks, adjdict, pos_lookup)
         l2sca_result = process_l2sca(input_path, "./L2SCA/stanford-parser-full-2014-01-04/lexparser.sh", "./L2SCA/tregex.sh", False)
         result_array = process_variables(lca_result, l2sca_result)
         header = get_lexical_data_header_string(lca_result, l2sca_result)
@@ -277,7 +277,7 @@ def main(input_path='./input_data/piranhas.txt'):
             if filename.endswith('.txt'):
                 file_path = os.path.join(input_filepath, filename)
                 text_lines = read_input_text(file_path)
-                lca_result = process_lca(text_lines, Path(filename).name, wordranks, adjdict)
+                lca_result = process_lca(text_lines, Path(filename).name)
                 l2sca_result = process_l2sca(file_path, "./L2SCA/stanford-parser-full-2014-01-04/lexparser.sh", "./L2SCA/tregex.sh", False)
                 result_array = process_variables(lca_result, l2sca_result)
 
