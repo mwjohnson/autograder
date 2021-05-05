@@ -1,10 +1,12 @@
+import csv
+import nltk
 import random
+import spacy
 import string
 import sys
-from math import sqrt, log
-import nltk
-import spacy
+
 from nltk.stem import WordNetLemmatizer
+from math import sqrt, log
 
 
 # Returns the keys of dictionary d sorted by their values
@@ -137,7 +139,7 @@ def process_wordrank(anc_all_filename="./lca/anc_all_count.txt"):
     return wordranks, adjdict, pos_lookup
 
 
-def process_lex_stats(word, lemma, pos, result, wordranks, adjdict):
+def process_lex_stats_guy(word, lemma, pos, result, wordranks, adjdict):
     if pos not in string.punctuation and pos != "SYM":
         result['lemmaposlist'].append(lemma)
         result['lemmalist'].append(word)
@@ -177,6 +179,94 @@ def process_lex_stats(word, lemma, pos, result, wordranks, adjdict):
             result['lextypes'][word] = 1
             result['lextokens'] += 1
             if word_byte not in wordranks[-2000:]:
+                result['sverbtypes'][word] = 1
+                result['slextypes'][word] = 1
+                result['slextokens'] += 1
+
+    return result
+
+
+def read_coca_frequent_data(i_filename='coca_frequent_words.csv'):
+    """
+    rank	lemma	PoS
+    1	the	a
+    2	be	v
+    3	and	c
+
+    :param i_filename:
+    :type i_filename:
+    :return:
+    :rtype:
+    """
+    data = []
+    with open(i_filename, 'r', newline='\n', encoding='utf-8') as f:
+        reader = csv.reader(f,  delimiter='\t')
+        first = True
+        for row in reader:
+            if first:
+                first = False
+                continue
+            data.append(row[1])
+    return data
+
+
+def process_lex_stats_coca(word, lemma, pos, result, wordranks):
+    """
+
+    n: noun
+    v: verb
+    j: adjective
+    r: adverb
+
+    :param word:
+    :type word:
+    :param lemma:
+    :type lemma:
+    :param pos:
+    :type pos:
+    :param result:
+    :type result:
+    :return:
+    :rtype:
+    """
+    if pos not in string.punctuation and pos != "SYM":
+        result['lemmaposlist'].append(lemma)
+        result['lemmalist'].append(word)
+        result['wordtokens'] += 1
+        result['wordtypes'][word] = 1
+        if lemma not in wordranks[-2000:] and (pos != "NN" or pos != "CD"):
+            result['swordtypes'][word] = 1
+            result['swordtokens'] += 1
+        if pos[0] == "N":
+            result['lextypes'][word] = 1
+            result['nountypes'][word] = 1
+            result['lextokens'] += 1
+            result['nountokens'] += 1
+            if lemma not in wordranks[-2000:]:
+                result['slextypes'][word] = 1
+                result['slextokens'] += 1
+        elif pos[0] == "J":
+            result['lextypes'][word] = 1
+            result['adjtypes'][word] = 1
+            result['lextokens'] += 1
+            result['adjtokens'] += 1
+            if lemma not in wordranks[-2000:]:
+                result['slextypes'][word] = 1
+                result['slextokens'] += 1
+        elif pos[0] == "R":  # and (word in adjdict or (word[-2:] == "ly" and word[:-2] in adjdict)):
+            result['lextypes'][word] = 1
+            result['advtypes'][word] = 1
+            result['lextokens'] += 1
+            result['advtokens'] += 1
+            if lemma not in wordranks[-2000:]:
+                result['slextypes'][word] = 1
+                result['slextokens'] += 1
+        elif pos[0] == "V" and word not in ["be", "have"]:
+            result['verbtypes'][word] = 1
+            result['verbtokens'] += 1
+            result['lextypes'][word] = 1
+            result['lextokens'] += 1
+            if lemma not in wordranks[-2000:]:
                 result['sverbtypes'][word] = 1
                 result['slextypes'][word] = 1
                 result['slextokens'] += 1
@@ -269,7 +359,8 @@ def main(lemlines, filename):
     spacy_results = prepare_empty_results()
     nltk_results = prepare_empty_results()
 
-    wordranks, adjdict, pos_lookup = process_wordrank()
+    wordranks_guy, adjdict, pos_lookup = process_wordrank()
+    wordranks = read_coca_frequent_data()
 
     lemmatizer = WordNetLemmatizer()
     nlp = spacy.load("en_core_web_lg")
@@ -281,7 +372,7 @@ def main(lemlines, filename):
         for idx, token in enumerate(guy_tokens):
             guy_word, guy_lemma, guy_tag = parse_guy(token, pos_lookup)
             if guy_word and guy_lemma and guy_tag:
-                guy_results = process_lex_stats(guy_word, guy_lemma, guy_tag, guy_results, wordranks, adjdict)
+                guy_results = process_lex_stats_guy(guy_word, guy_lemma, guy_tag, guy_results, wordranks_guy, adjdict)
 
         # Process Spacy model
         spacy_tokens = nlp(text)
@@ -289,7 +380,7 @@ def main(lemlines, filename):
             spacy_word = spacy_tokens[idx].text
             spacy_tag = spacy_tokens[idx].tag_
             spacy_lemma = spacy_tokens[idx].lemma_
-            spacy_results = process_lex_stats(spacy_word, spacy_lemma, spacy_tag, spacy_results, wordranks, adjdict)
+            spacy_results = process_lex_stats_coca(spacy_word, spacy_lemma, spacy_tag, spacy_results, wordranks)
 
         # Process nltk model
         nltk_word_tokens = nltk.word_tokenize(text)
@@ -298,7 +389,7 @@ def main(lemlines, filename):
             nltk_word = nltk_word_tokens[idx]
             nltk_tag = tags[idx][1]
             nltk_lemma = lemmatizer.lemmatize(nltk_word_tokens[idx])
-            nltk_results = process_lex_stats(nltk_word, nltk_lemma, nltk_tag, nltk_results, wordranks, adjdict)
+            nltk_results = process_lex_stats_coca(nltk_word, nltk_lemma, nltk_tag, nltk_results, wordranks)
 
     guy_scores = process_scores(filename, guy_results)
     spacy_scores = process_scores(filename, spacy_results)

@@ -263,7 +263,7 @@ def main(input_path='./input_data/piranhas.txt'):
 
     if mode == 'file':
         text_lines = read_input_text(input_path)
-        lca_result = process_lca(text_lines, Path(input_path).name, wordranks, adjdict, pos_lookup)
+        lca_result = process_lca(text_lines, Path(input_path).name)
         l2sca_result = process_l2sca(input_path, "./L2SCA/stanford-parser-full-2014-01-04/lexparser.sh", "./L2SCA/tregex.sh", False)
         result_array = process_variables(lca_result, l2sca_result)
         header = get_lexical_data_header_string(lca_result, l2sca_result)
