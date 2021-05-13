@@ -230,13 +230,14 @@ def process_lex_stats_coca(word, lemma, pos, result, wordranks):
     :rtype:
     """
     if pos not in string.punctuation and pos != "SYM":
-        result['lemmaposlist'].append(lemma)
-        result['lemmalist'].append(word)
+        result['lemmaposlist'].append(pos)
+        result['lemmalist'].append(lemma)
         result['wordtokens'] += 1
-        result['wordtypes'][word] = 1
+        result['wordtypes'][lemma] = 1
         if lemma not in wordranks[-2000:] and (pos != "NN" or pos != "CD"):
-            result['swordtypes'][word] = 1
+            result['swordtypes'][lemma] = 1
             result['swordtokens'] += 1
+
         if pos[0] == "N":
             result['lextypes'][word] = 1
             result['nountypes'][word] = 1
@@ -245,6 +246,7 @@ def process_lex_stats_coca(word, lemma, pos, result, wordranks):
             if lemma not in wordranks[-2000:]:
                 result['slextypes'][word] = 1
                 result['slextokens'] += 1
+
         elif pos[0] == "J":
             result['lextypes'][word] = 1
             result['adjtypes'][word] = 1
@@ -253,6 +255,7 @@ def process_lex_stats_coca(word, lemma, pos, result, wordranks):
             if lemma not in wordranks[-2000:]:
                 result['slextypes'][word] = 1
                 result['slextokens'] += 1
+
         elif pos[0] == "R":  # and (word in adjdict or (word[-2:] == "ly" and word[:-2] in adjdict)):
             result['lextypes'][word] = 1
             result['advtypes'][word] = 1
@@ -261,6 +264,7 @@ def process_lex_stats_coca(word, lemma, pos, result, wordranks):
             if lemma not in wordranks[-2000:]:
                 result['slextypes'][word] = 1
                 result['slextokens'] += 1
+
         elif pos[0] == "V" and word not in ["be", "have"]:
             result['verbtypes'][word] = 1
             result['verbtokens'] += 1
