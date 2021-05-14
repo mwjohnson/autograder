@@ -234,7 +234,7 @@ def process_lex_stats_coca(word, lemma, pos, result, wordranks):
         result['lemmalist'].append(lemma)
         result['wordtokens'] += 1
         result['wordtypes'][lemma] = 1
-        if lemma not in wordranks[-2000:] and (pos != "NN" or pos != "CD"):
+        if lemma not in wordranks[:2000] and (pos != "NN" or pos != "CD"):
             result['swordtypes'][lemma] = 1
             result['swordtokens'] += 1
 
@@ -243,7 +243,7 @@ def process_lex_stats_coca(word, lemma, pos, result, wordranks):
             result['nountypes'][word] = 1
             result['lextokens'] += 1
             result['nountokens'] += 1
-            if lemma not in wordranks[-2000:]:
+            if lemma not in wordranks[:2000]:
                 result['slextypes'][word] = 1
                 result['slextokens'] += 1
 
@@ -252,7 +252,7 @@ def process_lex_stats_coca(word, lemma, pos, result, wordranks):
             result['adjtypes'][word] = 1
             result['lextokens'] += 1
             result['adjtokens'] += 1
-            if lemma not in wordranks[-2000:]:
+            if lemma not in wordranks[:2000]:
                 result['slextypes'][word] = 1
                 result['slextokens'] += 1
 
@@ -261,7 +261,7 @@ def process_lex_stats_coca(word, lemma, pos, result, wordranks):
             result['advtypes'][word] = 1
             result['lextokens'] += 1
             result['advtokens'] += 1
-            if lemma not in wordranks[-2000:]:
+            if lemma not in wordranks[:2000]:
                 result['slextypes'][word] = 1
                 result['slextokens'] += 1
 
@@ -270,7 +270,7 @@ def process_lex_stats_coca(word, lemma, pos, result, wordranks):
             result['verbtokens'] += 1
             result['lextypes'][word] = 1
             result['lextokens'] += 1
-            if lemma not in wordranks[-2000:]:
+            if lemma not in wordranks[:2000]:
                 result['sverbtypes'][word] = 1
                 result['slextypes'][word] = 1
                 result['slextokens'] += 1
@@ -403,7 +403,7 @@ def main(lemlines, filename):
     print(f'spacy:    {spacy_scores}')
     print(f'nltk:     {nltk_scores}')
 
-    return spacy_scores
+    return guy_scores, spacy_scores, nltk_scores
 
 
 if __name__ == '__main__':

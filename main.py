@@ -149,8 +149,8 @@ def process_result_array(result_array):
 
 @timer_decorator
 def process_lca(lemlines, input_filename):
-    lca_result = lc_anc.main(lemlines, input_filename)
-    return lca_result
+    guy_lca_scores, spacy_lca_scores, nltk_lca_scores = lc_anc.main(lemlines, input_filename)
+    return guy_lca_scores, spacy_lca_scores, nltk_lca_scores
 
 
 @timer_decorator
@@ -235,7 +235,7 @@ def write_header_and_data_to_file(header, data, output_filename):
     :param output_filename:
     :return:
     """
-    with open(output_filename, 'w', encoding='utf8') as output_file:
+    with open(output_filename, 'w', encoding='utf8', newline='') as output_file:
         output_file.write(header)
         for d in data:
             output_file.write(d)
@@ -262,33 +262,58 @@ def main(input_path='./input_data/piranhas.txt'):
     mode = check_mode(input_filepath)
 
     if mode == 'file':
+        lex_data = []
         text_lines = read_input_text(input_path)
-        lca_result = process_lca(text_lines, Path(input_path).name)
+        guy_lca_scores, spacy_lca_scores, nltk_lca_scores = process_lca(text_lines, Path(input_path).name)
         l2sca_result = process_l2sca(input_path, "./L2SCA/stanford-parser-full-2014-01-04/lexparser.sh", "./L2SCA/tregex.sh", False)
-        result_array = process_variables(lca_result, l2sca_result)
-        header = get_lexical_data_header_string(lca_result, l2sca_result)
-        lex_data = get_lexical_data_string(lca_result, l2sca_result)
-        write_string_to_file(header+lex_data, f'./output/{Path(input_path).name}.out.csv')
+
+        guy_result_array = process_variables(guy_lca_scores, l2sca_result)
+        spacy_result_array = process_variables(spacy_lca_scores, l2sca_result)
+        nltk_result_array = process_variables(nltk_lca_scores, l2sca_result)
+
+        header = get_lexical_data_header_string(guy_lca_scores, l2sca_result)
+
+        lex_data.append(get_lexical_data_string(guy_lca_scores, l2sca_result))
+        lex_data.append(get_lexical_data_string(spacy_lca_scores, l2sca_result))
+        lex_data.append(get_lexical_data_string(nltk_lca_scores, l2sca_result))
+
+        process_result_array(guy_result_array)
+        process_result_array(spacy_result_array)
+        process_result_array(nltk_result_array)
+
+        write_string_to_file(header+lex_data, f'./output/{Path(input_path).name}.3_model_out.csv')
 
     if mode == 'directory':
         header = None
-        lex_data = []
+        guy_lex_data = []
+        spacy_lex_data = []
+        nltk_lex_data = []
         for fdx, filename in enumerate(os.listdir(input_filepath)):
             if filename.endswith('.txt'):
                 file_path = os.path.join(input_filepath, filename)
                 text_lines = read_input_text(file_path)
-                lca_result = process_lca(text_lines, Path(filename).name)
+                guy_lca_scores, spacy_lca_scores, nltk_lca_scores = process_lca(text_lines, Path(filename).name)
                 l2sca_result = process_l2sca(file_path, "./L2SCA/stanford-parser-full-2014-01-04/lexparser.sh", "./L2SCA/tregex.sh", False)
-                result_array = process_variables(lca_result, l2sca_result)
+
+                guy_result_array = process_variables(guy_lca_scores, l2sca_result)
+                spacy_result_array = process_variables(spacy_lca_scores, l2sca_result)
+                nltk_result_array = process_variables(nltk_lca_scores, l2sca_result)
 
                 if fdx == 0:
-                    header = get_lexical_data_header_string(lca_result, l2sca_result)
+                    header = get_lexical_data_header_string(guy_lca_scores, l2sca_result)
 
-                lex_data.append(get_lexical_data_string(lca_result, l2sca_result))
+                guy_lex_data.append(get_lexical_data_string(guy_lca_scores, l2sca_result))
+                spacy_lex_data.append(get_lexical_data_string(spacy_lca_scores, l2sca_result))
+                nltk_lex_data.append(get_lexical_data_string(nltk_lca_scores, l2sca_result))
 
-        write_header_and_data_to_file(header, lex_data, os.path.join(os.getcwd(), './output/out.csv'))
+                process_result_array(guy_result_array)
+                process_result_array(spacy_result_array)
+                process_result_array(nltk_result_array)
 
-    process_result_array(result_array)
+        write_header_and_data_to_file(header, guy_lex_data, os.path.join(os.getcwd(), './output/guy_out.csv'))
+        write_header_and_data_to_file(header, spacy_lex_data, os.path.join(os.getcwd(), './output/spacy_out.csv'))
+        write_header_and_data_to_file(header, nltk_lex_data, os.path.join(os.getcwd(), './output/nltk_out.csv'))
+
     logger.info('Autograder Complete.')
 
 
