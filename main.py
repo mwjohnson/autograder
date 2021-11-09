@@ -45,7 +45,7 @@ def timer_decorator(func_to_time):
 
 def process_variables(lca_res, l2sca_res):
     """
-    lca_res = {'filename': 'dickhole.txt', 'wordtypes': 59, 'swordtypes': 59, 'lextypes': 3, 'slextypes': 3, 'wordtokens': 72,
+    lca_res = {'filename': 'input_text.txt', 'wordtypes': 59, 'swordtypes': 59, 'lextypes': 3, 'slextypes': 3, 'wordtokens': 72,
        'swordtokens': 72, 'lextokens': 3, 'slextokens': 3, 'ld': 0.041666666666666664, 'ls1': 1.0, 'ls2': 1.0,
        'vs1': 1.0, 'vs2': 1.0, 'cvs1': 0.7071067811865475, 'ndw': 59, 'ndwz': 44, 'ndwerz': 43.0, 'ndwesz': 43.6,
        'ttr': 0.8194444444444444, 'msttr': 0.88, 'cttr': 4.916666666666667, 'rttr': 6.953216681667718,
@@ -149,8 +149,8 @@ def process_result_array(result_array):
 
 @timer_decorator
 def process_lca(lemlines, input_filename):
-    guy_lca_scores, spacy_lca_scores, nltk_lca_scores = lc_anc.main(lemlines, input_filename)
-    return guy_lca_scores, spacy_lca_scores, nltk_lca_scores
+    lu_lca_scores, spacy_lca_scores, nltk_lca_scores = lc_anc.main(lemlines, input_filename)
+    return lu_lca_scores, spacy_lca_scores, nltk_lca_scores
 
 
 @timer_decorator
@@ -256,7 +256,7 @@ def check_mode(input_filepath):
 
 @timer_decorator
 def main(input_path='./input_data/piranhas.txt'):
-#    wordranks, adjdict, pos_lookup = preprocess('./lca/anc_all_count.txt')  # pre-process the word ranks.
+    # wordranks, adjdict, pos_lookup = preprocess('./lca/anc_all_count.txt')  # pre-process the word ranks.
 
     input_filepath = os.path.join(os.getcwd(), input_path)
     mode = check_mode(input_filepath)
@@ -264,20 +264,20 @@ def main(input_path='./input_data/piranhas.txt'):
     if mode == 'file':
         lex_data = []
         text_lines = read_input_text(input_path)
-        guy_lca_scores, spacy_lca_scores, nltk_lca_scores = process_lca(text_lines, Path(input_path).name)
+        lu_lca_scores, spacy_lca_scores, nltk_lca_scores = process_lca(text_lines, Path(input_path).name)
         l2sca_result = process_l2sca(input_path, "./L2SCA/stanford-parser-full-2014-01-04/lexparser.sh", "./L2SCA/tregex.sh", False)
 
-        guy_result_array = process_variables(guy_lca_scores, l2sca_result)
+        lu_result_array = process_variables(lu_lca_scores, l2sca_result)
         spacy_result_array = process_variables(spacy_lca_scores, l2sca_result)
         nltk_result_array = process_variables(nltk_lca_scores, l2sca_result)
 
-        header = get_lexical_data_header_string(guy_lca_scores, l2sca_result)
+        header = get_lexical_data_header_string(lu_lca_scores, l2sca_result)
 
-        lex_data.append(get_lexical_data_string(guy_lca_scores, l2sca_result))
+        lex_data.append(get_lexical_data_string(lu_lca_scores, l2sca_result))
         lex_data.append(get_lexical_data_string(spacy_lca_scores, l2sca_result))
         lex_data.append(get_lexical_data_string(nltk_lca_scores, l2sca_result))
 
-        process_result_array(guy_result_array)
+        process_result_array(lu_result_array)
         process_result_array(spacy_result_array)
         process_result_array(nltk_result_array)
 
@@ -285,32 +285,32 @@ def main(input_path='./input_data/piranhas.txt'):
 
     if mode == 'directory':
         header = None
-        guy_lex_data = []
+        lu_lex_data = []
         spacy_lex_data = []
         nltk_lex_data = []
         for fdx, filename in enumerate(os.listdir(input_filepath)):
             if filename.endswith('.txt'):
                 file_path = os.path.join(input_filepath, filename)
                 text_lines = read_input_text(file_path)
-                guy_lca_scores, spacy_lca_scores, nltk_lca_scores = process_lca(text_lines, Path(filename).name)
+                lu_lca_scores, spacy_lca_scores, nltk_lca_scores = process_lca(text_lines, Path(filename).name)
                 l2sca_result = process_l2sca(file_path, "./L2SCA/stanford-parser-full-2014-01-04/lexparser.sh", "./L2SCA/tregex.sh", False)
 
-                guy_result_array = process_variables(guy_lca_scores, l2sca_result)
+                lu_result_array = process_variables(lu_lca_scores, l2sca_result)
                 spacy_result_array = process_variables(spacy_lca_scores, l2sca_result)
                 nltk_result_array = process_variables(nltk_lca_scores, l2sca_result)
 
                 if fdx == 0:
-                    header = get_lexical_data_header_string(guy_lca_scores, l2sca_result)
+                    header = get_lexical_data_header_string(lu_lca_scores, l2sca_result)
 
-                guy_lex_data.append(get_lexical_data_string(guy_lca_scores, l2sca_result))
+                lu_lex_data.append(get_lexical_data_string(lu_lca_scores, l2sca_result))
                 spacy_lex_data.append(get_lexical_data_string(spacy_lca_scores, l2sca_result))
                 nltk_lex_data.append(get_lexical_data_string(nltk_lca_scores, l2sca_result))
 
-                process_result_array(guy_result_array)
+                process_result_array(lu_result_array)
                 process_result_array(spacy_result_array)
                 process_result_array(nltk_result_array)
 
-        write_header_and_data_to_file(header, guy_lex_data, os.path.join(os.getcwd(), './output/guy_out.csv'))
+        write_header_and_data_to_file(header, lu_lex_data, os.path.join(os.getcwd(), './output/lu_out.csv'))
         write_header_and_data_to_file(header, spacy_lex_data, os.path.join(os.getcwd(), './output/spacy_out.csv'))
         write_header_and_data_to_file(header, nltk_lex_data, os.path.join(os.getcwd(), './output/nltk_out.csv'))
 

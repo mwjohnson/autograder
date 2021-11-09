@@ -139,7 +139,7 @@ def process_wordrank(anc_all_filename="./lca/anc_all_count.txt"):
     return wordranks, adjdict, pos_lookup
 
 
-def process_lex_stats_guy(word, lemma, pos, result, wordranks, adjdict):
+def process_lex_stats_lu(word, lemma, pos, result, wordranks, adjdict):
     if pos not in string.punctuation and pos != "SYM":
         result['lemmaposlist'].append(lemma)
         result['lemmalist'].append(word)
@@ -278,19 +278,19 @@ def process_lex_stats_coca(word, lemma, pos, result, wordranks):
     return result
 
 
-def tokenize_guy(text):
+def tokenize_lu(text):
     text = text.strip()
     text = text.lower()
     return text.split()
 
 
-def parse_guy(text, poslookup):
+def parse_lu(text, poslookup):
     word = text.split("_")[0]
     word = word.translate(str.maketrans('', '', string.punctuation))
     try:
         pos = poslookup[str.encode(word)]
     except KeyError as e:
-        print(f'parse_guy, cannot parse: {word}')
+        print(f'parse_lu, cannot parse: {word}')
         return None, None, None
     lemma = word
     return word, lemma, pos
@@ -320,6 +320,22 @@ def process_scores(i_filename, results):
     lextokens = results['lextokens']
     slextokens = results['slextokens']
 
+    if results['verbtokens'] == 0:
+        print(f'WARNING: {i_filename} has zero verbtokens.')
+        results['verbtokens'] = 1
+
+    if results['wordtokens'] == 0:
+        print(f'WARNING: {i_filename} has zero wordtokens.')
+        results['wordtokens'] = 1
+
+    if lextokens == 0:
+        print(f'WARNING: {i_filename} has zero lextokens.')
+        lextokens = 1
+
+    if word_count == 0:
+        print(f'WARNING: {i_filename} has zero word-count.')
+        word_count = 1
+
     scores = {"filename": i_filename, "wordtypes": word_count, "swordtypes": sword_count,
               "lextypes": len(results['lextypes'].keys()), "slextypes": len(results['slextypes'].keys()), "wordtokens": wordtokens,
               "swordtokens": swordtokens, "lextokens": lextokens, "slextokens": slextokens,
@@ -346,7 +362,26 @@ def process_scores(i_filename, results):
               "lv": len(results['lextypes'].keys()) / float(lextokens), "vv2": len(results['verbtypes'].keys()) / float(lextokens),
               "nv": len(results['nountypes'].keys()) / float(results['nountokens']), "adjv": len(results['adjtypes'].keys()) / float(lextokens),
               "advv": len(results['advtypes'].keys()) / float(lextokens),
-              "modv": (len(results['advtypes'].keys()) + len(results['adjtypes'].keys())) / float(lextokens)}
+              "modv": (len(results['advtypes'].keys()) + len(results['adjtypes'].keys())) / float(lextokens),
+              "D": (ndw**2)/(2*(word_count-ndw))}
+
+    if results['verbtokens'] == 0:
+        scores['vv1'] = 0
+        scores['vs2'] = 0
+        scores['cvs1'] = 0
+        scores['vs1'] = 0
+        scores['svv1'] = 0
+        scores['cvv1'] = 0
+
+    if results['wordtokens'] == 0:
+        scores['ld'] = 0
+        scores['ls1'] = 0
+        scores['ndw'] = 0
+        scores['ndwz'] = 0
+        scores['ndwerz'] = 0
+        scores['ndwesz'] = 0
+        scores['cttr'] = 0
+        scores['uber'] = 0
 
     for key in scores.keys():
         if isinstance(scores[key], float):
@@ -359,11 +394,11 @@ def main(lemlines, filename):
     # nltk.download('averaged_perceptron_tagger')
     # nltk.download('wordnet')
 
-    guy_results = prepare_empty_results()
+    lu_results = prepare_empty_results()
     spacy_results = prepare_empty_results()
     nltk_results = prepare_empty_results()
 
-    wordranks_guy, adjdict, pos_lookup = process_wordrank()
+    wordranks_lu, adjdict, pos_lookup = process_wordrank()
     wordranks = read_coca_frequent_data()
 
     lemmatizer = WordNetLemmatizer()
@@ -371,12 +406,12 @@ def main(lemlines, filename):
 
     for text in lemlines:
 
-        # Process the guys' algorithm.
-        guy_tokens = tokenize_guy(text)
-        for idx, token in enumerate(guy_tokens):
-            guy_word, guy_lemma, guy_tag = parse_guy(token, pos_lookup)
-            if guy_word and guy_lemma and guy_tag:
-                guy_results = process_lex_stats_guy(guy_word, guy_lemma, guy_tag, guy_results, wordranks_guy, adjdict)
+        # Process the lu's algorithm.
+        lu_tokens = tokenize_lu(text)
+        for idx, token in enumerate(lu_tokens):
+            lu_word, lu_lemma, lu_tag = parse_lu(token, pos_lookup)
+            if lu_word and lu_lemma and lu_tag:
+                lu_results = process_lex_stats_lu(lu_word, lu_lemma, lu_tag, lu_results, wordranks_lu, adjdict)
 
         # Process Spacy model
         spacy_tokens = nlp(text)
@@ -395,15 +430,15 @@ def main(lemlines, filename):
             nltk_lemma = lemmatizer.lemmatize(nltk_word_tokens[idx])
             nltk_results = process_lex_stats_coca(nltk_word, nltk_lemma, nltk_tag, nltk_results, wordranks)
 
-    guy_scores = process_scores(filename, guy_results)
+    lu_scores = process_scores(filename, lu_results)
     spacy_scores = process_scores(filename, spacy_results)
     nltk_scores = process_scores(filename, nltk_results)
 
-    print(f'guy algo: {guy_scores}')
+    print(f'lu algo: {lu_scores}')
     print(f'spacy:    {spacy_scores}')
     print(f'nltk:     {nltk_scores}')
 
-    return guy_scores, spacy_scores, nltk_scores
+    return lu_scores, spacy_scores, nltk_scores
 
 
 if __name__ == '__main__':
