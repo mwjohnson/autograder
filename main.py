@@ -220,6 +220,8 @@ def get_lexical_data_header_string(lca_result, l2sca_result):
 
 
 def write_string_to_file(string, output_filename):
+    assert Path(output_filename).parent.is_dir(), f'The directory: {Path(output_filename).parent.absolute()} does not exist. Cannot create' \
+                                                  f' output file. Please create the above directory, or choose another file location.'
     with open(output_filename, 'w', encoding='utf8') as output_file:
         output_file.write(string)
     logger.info(f'{output_filename} written to disk.')
@@ -235,6 +237,9 @@ def write_header_and_data_to_file(header, data, output_filename):
     :param output_filename:
     :return:
     """
+    assert Path(output_filename).parent.is_dir(), f'The directory: {Path(output_filename).parent.absolute()} does ' \
+                                                  f'not exist. Cannot create output file. Please create the above ' \
+                                                  f'directory, or choose another file location.'
     with open(output_filename, 'w', encoding='utf8', newline='') as output_file:
         output_file.write(header)
         for d in data:
@@ -281,7 +286,7 @@ def main(input_path='./input_data/piranhas.txt'):
         process_result_array(spacy_result_array)
         process_result_array(nltk_result_array)
 
-        write_string_to_file(header+lex_data, f'./output/{Path(input_path).name}.3_model_out.csv')
+        write_header_and_data_to_file(header, lex_data, os.path.join(os.getcwd(), f'./output/{Path(input_path).stem}.3_model_out.csv'))
 
     if mode == 'directory':
         header = None

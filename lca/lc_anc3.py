@@ -200,7 +200,7 @@ def read_coca_frequent_data(i_filename='coca_frequent_words.csv'):
     """
     data = []
     with open(i_filename, 'r', newline='\n', encoding='utf-8') as f:
-        reader = csv.reader(f,  delimiter='\t')
+        reader = csv.reader(f, delimiter='\t')
         first = True
         for row in reader:
             if first:
@@ -226,6 +226,8 @@ def process_lex_stats_coca(word, lemma, pos, result, wordranks):
     :type pos:
     :param result:
     :type result:
+    :param wordranks:
+    :type wordranks:
     :return:
     :rtype:
     """
@@ -279,9 +281,7 @@ def process_lex_stats_coca(word, lemma, pos, result, wordranks):
 
 
 def tokenize_lu(text):
-    text = text.strip()
-    text = text.lower()
-    return text.split()
+    return text.strip().lower().split()
 
 
 def parse_lu(text, poslookup):
@@ -336,8 +336,14 @@ def process_scores(i_filename, results):
         print(f'WARNING: {i_filename} has zero word-count.')
         word_count = 1
 
+    if word_count - ndw == 0:
+        print(
+            f'WARNING: {i_filename} will have a D of zero; word_count - ndw is zero. word_count artifically incremented by 1.')
+        word_count = ndw + 1
+
     scores = {"filename": i_filename, "wordtypes": word_count, "swordtypes": sword_count,
-              "lextypes": len(results['lextypes'].keys()), "slextypes": len(results['slextypes'].keys()), "wordtokens": wordtokens,
+              "lextypes": len(results['lextypes'].keys()), "slextypes": len(results['slextypes'].keys()),
+              "wordtokens": wordtokens,
               "swordtokens": swordtokens, "lextokens": lextokens, "slextokens": slextokens,
               "ld": float(lextokens) / wordtokens,  # 1. lexical density
               # 2.1 lexical sophistication
@@ -359,11 +365,13 @@ def process_scores(i_filename, results):
               "cvv1": verbtype_count / sqrt(2 * results['verbtokens']),
 
               # 3.4 lexical diversity
-              "lv": len(results['lextypes'].keys()) / float(lextokens), "vv2": len(results['verbtypes'].keys()) / float(lextokens),
-              "nv": len(results['nountypes'].keys()) / float(results['nountokens']), "adjv": len(results['adjtypes'].keys()) / float(lextokens),
+              "lv": len(results['lextypes'].keys()) / float(lextokens),
+              "vv2": len(results['verbtypes'].keys()) / float(lextokens),
+              "nv": len(results['nountypes'].keys()) / float(results['nountokens']),
+              "adjv": len(results['adjtypes'].keys()) / float(lextokens),
               "advv": len(results['advtypes'].keys()) / float(lextokens),
               "modv": (len(results['advtypes'].keys()) + len(results['adjtypes'].keys())) / float(lextokens),
-              "D": (ndw**2)/(2*(word_count-ndw))}
+              "D": (ndw ** 2) / (2 * (word_count - ndw))}
 
     if results['verbtokens'] == 0:
         scores['vv1'] = 0
@@ -442,6 +450,6 @@ def main(lemlines, filename):
 
 
 if __name__ == '__main__':
-    filename = sys.argv[1].split("/")[-1]
-    final_result = main(read_file(), filename)
+    input_filename = sys.argv[1].split("/")[-1]
+    final_result = main(read_file(), input_filename)
     print(final_result)
