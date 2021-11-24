@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import os
 import sys
 from collections import Counter
@@ -5,6 +7,7 @@ from collections import Counter
 import spacy
 
 from L2SCA.analyzeText4 import division
+from arg_counter.arg_counter import ArgCounter
 from lca.lc_anc3 import prepare_empty_results, read_coca_frequent_data, process_lex_stats_coca, process_scores
 from main import read_input_text, check_mode, write_header_and_data_to_file
 
@@ -50,7 +53,7 @@ def process_spacy_syntax(spacy_syntax, word_count):
             'nmod_s': nmod_s, 'pd_s': pd_s, 'cc_s': cc_s}
 
 
-def process(input_text, filename):
+def process_spacy(input_text, filename):
     """
 
     :param input_text:
@@ -105,27 +108,50 @@ def stringify_scores(scores):
     return string_scores
 
 
+def process_d2_d3(arg_count, word_count):
+    d2 = arg_count / word_count
+    d3 = arg_count - (100*arg_count/word_count)
+    return d2, d3
+
+
+def process():
+    pass
+#    return {'scores': spacy_scores, 'syntax': spacy_syntax_results, 'arguments': arg_count,
+#                               'argument_details': details, 'd2': d2, 'd3': d3}
+
 def main(input_path):
     input_filepath = os.path.join(os.getcwd(), input_path)
     mode = check_mode(input_filepath)
+
+    ac = ArgCounter('./arg_counter/test/word_list.txt')
 
     if mode == 'file':
         filename = input_path
         text_lines = read_input_text(input_path)
         input_text = ''.join(text_lines)
-        spacy_scores, spacy_syntax_results = process(input_text, filename)
-        print(f'{spacy_scores}{spacy_syntax_results}')
+        spacy_scores, spacy_syntax_results = process_spacy(input_text, filename)
+        arg_count, counts = ac.count_arguments(input_text)
+        d2, d3 = process_d2_d3(arg_count, spacy_scores)
+        print(f'{spacy_scores}\n{spacy_syntax_results}')
+        print(f'{arg_count}\n{counts}')
 
     if mode == 'directory':
         scores = []
         for fdx, filename in enumerate(os.listdir(input_filepath)):
             if filename.endswith('.txt'):
                 text_lines = read_input_text(os.path.join(input_filepath, filename))
+                #result = process(read_input_text(os.path.join(input_filepath, filename)))
                 input_text = ''.join(text_lines)
-                spacy_scores, spacy_syntax_results = process(input_text, filename)
+                spacy_scores, spacy_syntax_results = process_spacy(input_text, filename)
+                arg_count, details = ac.count_arguments(input_text)
+                d2, d3 = process_d2_d3(arg_count, spacy_syntax_results['w'])
 
                 scores.append({'scores': spacy_scores,
-                               'syntax': spacy_syntax_results})
+                               'syntax': spacy_syntax_results,
+                               'arguments': arg_count,
+                               'argument_details': details,
+                               'd2': d2,
+                               'd3': d3})
 
         header = build_header(scores)
         string_scores = stringify_scores(scores)
