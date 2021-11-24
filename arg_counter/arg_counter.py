@@ -61,7 +61,7 @@ class ArgCounter:
 
 def main():
     # read word list
-    ac = ArgCounter('./test/word_list.txt')
+    ac = ArgCounter('word_list.txt')
     # read input text
     input_text = "With regards to your mother, I told her that I have the giggles because I do. " \
                  "In regards to your father, I have a superiority complex. In addition, I kinda wanna" \

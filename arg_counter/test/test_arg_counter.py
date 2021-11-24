@@ -20,7 +20,7 @@ class TestArgCounter(unittest.TestCase):
         expected_details = {'because': 2, 'in regards to': 1, 'in addition': 1, 'regarding': 1, 'additionally': 1, 'addition': 2}
 
         self.assertEqual(arg_count, expected_arg_count, f'arg_count: {arg_count} does not equal expected_arg_count: {expected_arg_count}')
-        self.assertEqual(arg_count, expected_arg_count, f'details: {details} does not equal expected_details: {expected_details}')
+        self.assertEqual(details, expected_details, f'details: {details} does not equal expected_details: {expected_details}')
 
     def test_abcd(self):
         pass
