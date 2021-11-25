@@ -1,10 +1,14 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 import os
 import sys
 from collections import Counter
+from pathlib import Path
 
 import spacy
 
 from L2SCA.analyzeText4 import division
+from arg_counter.arg_counter import ArgCounter
 from lca.lc_anc3 import prepare_empty_results, read_coca_frequent_data, process_lex_stats_coca, process_scores
 from main import read_input_text, check_mode, write_header_and_data_to_file
 
@@ -45,12 +49,14 @@ def process_spacy_syntax(spacy_syntax, word_count):
     nmod_s = division(nmod, s)
     pd_s = division(pd, s)
     cc_s = division(cc, s)
+    Add3 = (nmod+pd+cc)
+    Add3Div = division(Add3, w)
 
     return {'w': w, 's': s, 'Subj': subj, 'nmod': nmod, 'pd': pd, 'cc': cc, 'mls': mls, 'mlc': mlc, 'c_s': c_s,
-            'nmod_s': nmod_s, 'pd_s': pd_s, 'cc_s': cc_s}
+            'nmod_s': nmod_s, 'pd_s': pd_s, 'cc_s': cc_s, 'Add3': Add3, 'Add3Div':Add3Div}
 
 
-def process(input_text, filename):
+def process_spacy(input_text, filename):
     """
 
     :param input_text:
@@ -78,10 +84,9 @@ def process(input_text, filename):
 
 def build_header(scores):
     header = ''
-    for k in scores[0]['scores'].keys():
-        header += f'{k},'
-    for k in scores[0]['syntax'].keys():
-        header += f'{k},'
+    for key in scores[0]:
+        for k in scores[0][key].keys():
+            header += f'{k},'
     header += '\n'
     return header
 
@@ -97,38 +102,69 @@ def stringify_scores(scores):
     """
     string_scores = ''
     for sc in scores:
-        for v in sc['scores'].values():
-            string_scores += f'{v},'
-        for v in sc['syntax'].values():
-            string_scores += f'{v},'
+        for key in sc.keys():
+            for v in sc[key].values():
+                string_scores += f'{v},'
         string_scores += '\n'
     return string_scores
+
+
+def list_stringify_scores(scores):
+    string_scores_list = []
+
+    for sc in scores:
+        string_score = ''
+        for key in sc.keys():
+            for v in sc[key].values():
+                string_score += f'{v},'
+        string_score += '\n'
+        string_scores_list.append(string_score)
+    return string_scores_list
+
+
+def process_arguments(arg_count, word_count):
+    return {'arg_cnt': arg_count,
+            'arg_pct': arg_count / word_count,
+            'arg_den': arg_count - (100*arg_count/word_count)}
+
+
+def process(file_path: str, filename: str, arg_counter: ArgCounter):
+    """
+
+    :param file_path:
+    :param filename:
+    :param arg_counter:
+    :return:
+    """
+    text_lines = read_input_text(file_path)
+    input_text = ''.join(text_lines)
+    spacy_scores, spacy_syntax_results = process_spacy(input_text, filename)
+    arg_count, details = arg_counter.count_arguments(input_text)
+    argument_scores = process_arguments(arg_count, spacy_syntax_results['w'])
+    return {'scores': spacy_scores, 'syntax': spacy_syntax_results, 'argument_scores': argument_scores}
 
 
 def main(input_path):
     input_filepath = os.path.join(os.getcwd(), input_path)
     mode = check_mode(input_filepath)
 
+    ac = ArgCounter('arg_counter/word_list.txt')
+
     if mode == 'file':
-        filename = input_path
-        text_lines = read_input_text(input_path)
-        input_text = ''.join(text_lines)
-        spacy_scores, spacy_syntax_results = process(input_text, filename)
-        print(f'{spacy_scores}{spacy_syntax_results}')
+        result = process(input_path, Path(input_path).name, ac)
+        print(f"Results for {result['scores']['filename']}")
+        for k, v in result.items():
+            print(f'{k}: {v}')
 
     if mode == 'directory':
         scores = []
         for fdx, filename in enumerate(os.listdir(input_filepath)):
             if filename.endswith('.txt'):
-                text_lines = read_input_text(os.path.join(input_filepath, filename))
-                input_text = ''.join(text_lines)
-                spacy_scores, spacy_syntax_results = process(input_text, filename)
-
-                scores.append({'scores': spacy_scores,
-                               'syntax': spacy_syntax_results})
+                result = process(os.path.join(input_filepath, filename), filename, ac)
+                scores.append(result)
 
         header = build_header(scores)
-        string_scores = stringify_scores(scores)
+        string_scores = list_stringify_scores(scores)
         write_header_and_data_to_file(header, string_scores, os.path.join(os.getcwd(),
                                                                           f'./output/spacy_full_out_{len(scores)}.csv'))
 
