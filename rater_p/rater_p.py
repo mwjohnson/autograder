@@ -88,7 +88,6 @@ def calculate_g3(score):
 
     if summed_score >= 2:
         g3score = 4
-
     else:
         g3score = 3
 
