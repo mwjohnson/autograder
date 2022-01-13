@@ -18,42 +18,61 @@ def process_spacy_syntax(spacy_syntax, word_count):
     w = word_count
     s = count_dict['ROOT']
 
-    subj_keys = ['nsubj', 'nsubjpass']
-    subj = 0
-    for k in subj_keys:
+    clause_keys = ['nsubj', 'nsubjpass']
+    clause = 0
+    for k in clause_keys:
         if k in count_dict:
-            subj += count_dict[k]
+            clause += count_dict[k]
 
-    nmod_keys = ['nmod', 'npmod', 'tmod', 'poss']
+    nmod_keys = ['nmod', 'npmod','tmod', 'poss']
     nmod = 0
     for k in nmod_keys:
         if k in count_dict:
             nmod += count_dict[k]
 
-    pd_keys = ['acl', 'relcl']
-    pd = 0
-    for k in pd_keys:
+    omod_keys = ['advmod', 'amod', 'appos']
+    omod = 0
+    for k in omod_keys:
         if k in count_dict:
-            pd += count_dict[k]
+            omod += count_dict[k]
 
-    cc_keys = ['csubj', 'csubjpass', 'ccmop', 'xcomp']
-    cc = 0
-    for k in cc_keys:
+    cord_keys = ['conj', 'cc']
+    cord = 0
+    for k in cord_keys:
         if k in count_dict:
-            cc += count_dict[k]
+            cord += count_dict[k]
 
-    # compute the 6 additional syntactic complexity indices
+    dc_keys = ['acl', 'relcl', 'advcl']
+    dc = 0
+    for k in dc_keys:
+        if k in count_dict:
+            dc += count_dict[k]
+
+    comp_keys = ['csubj', 'csubjpass', 'ccomp', 'xcomp']
+    comp = 0
+    for k in comp_keys:
+        if k in count_dict:
+            comp += count_dict[k]
+
+    # compute the additional syntactic complexity indices
+    allmod = nmod + omod
+    add3 = (dc + comp + cord)
+    add5 = (dc + comp + cord + nmod + omod)
     mls = division(w, s)
-    mlc = division(w, subj)
-    c_s = division(subj, s)
-    nmod_s = division(nmod, s)
-    pd_s = division(pd, s)
-    cc_s = division(cc, s)
-    Add3 = (nmod+pd+cc)
-    Add3Div = division(Add3, w)
+    mlc = division(w, clause)
+    c_s = division(clause, s)
+    allmod_s = division(allmod, s)
+    allmod_c = division(allmod, clause)
+    dc_s = division(dc, s)
+    co_s = division(cord, s)
+    comp_s = division(comp, s)
+    comp_c = division(comp, clause)
+    add3_s = division(add3, s)
+    add5_s = division(add5, s)
 
-    return {'w': w, 's': s, 'Subj': subj, 'nmod': nmod, 'pd': pd, 'cc': cc, 'mls': mls, 'mlc': mlc, 'c_s': c_s,
-            'nmod_s': nmod_s, 'pd_s': pd_s, 'cc_s': cc_s, 'Add3': Add3, 'Add3Div':Add3Div}
+
+    return {'w': w, 's': s, 'c': clause, 'nmod': nmod, 'omod': omod, 'allmod':allmod, 'cord': cord, 'dc': dc, 'comp':comp, 'add3':add3, 'add5':add5, 'mls': mls, 'mlc': mlc, 'c_s': c_s,
+            'm_s': allmod_s, 'm_c':allmod_c, 'dc_s':dc_s,'co_s': co_s, 'comp_s': comp_s, 'comp_c':comp_c, 'add3_s':add3_s, 'add5_s':add5_s}
 
 
 def process_spacy(input_text, filename):

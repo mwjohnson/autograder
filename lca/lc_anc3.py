@@ -338,10 +338,10 @@ def process_scores(i_filename, results):
         print(f'WARNING: {i_filename} has zero word-count.')
         word_count = 1
 
-    if word_count - ndw == 0:
+    if wordtokens - ndw == 0:
         print(
-            f'WARNING: {i_filename} will have a D of zero; word_count - ndw is zero. word_count artifically incremented by 1.')
-        word_count = ndw + 1
+            f'WARNING: {i_filename} will have a D of zero; wordtokens - ndw is zero. word_count artifically incremented by 1.')
+        wordtokens = ndw + 1
 
     scores = {"filename": i_filename, "wordtypes": word_count, "swordtypes": sword_count,
               "lextypes": len(results['lextypes'].keys()), "slextypes": len(results['slextypes'].keys()),
@@ -373,7 +373,7 @@ def process_scores(i_filename, results):
               "adjv": len(results['adjtypes'].keys()) / float(lextokens),
               "advv": len(results['advtypes'].keys()) / float(lextokens),
               "modv": (len(results['advtypes'].keys()) + len(results['adjtypes'].keys())) / float(lextokens),
-              "D": (ndw ** 2) / (2 * (word_count - ndw))}
+              "D": (word_count ** 2) / (2 * (wordtokens - word_count))}
 
     if results['verbtokens'] == 0:
         scores['vv1'] = 0
