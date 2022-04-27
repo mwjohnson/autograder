@@ -17,8 +17,49 @@ def process_spacy_syntax(spacy_syntax, word_count):
     count_dict = dict(Counter(spacy_syntax))
     w = word_count
     s = count_dict['ROOT']
+    nsubj = count_dict['nsubj']
 
-    clause_keys = ['nsubj', 'nsubjpass']
+    try:
+        nsubjpass = count_dict['nsubjpass']
+    except KeyError:
+        nsubjpass = 0
+
+    try:
+        csubj = count_dict['csubj']
+    except KeyError:
+        csubj = 0
+
+    try:
+        csubjpass = count_dict['csubjpass']
+    except KeyError:
+        csubjpass = 0
+
+    try:
+        ccomp = count_dict['ccomp']
+    except KeyError:
+        ccomp = 0
+
+    try:
+        xcomp = count_dict['xcomp']
+    except KeyError:
+        xcomp = 0
+
+    try:
+        adverbclause = count_dict['advcl']
+    except KeyError:
+        adverbclause = 0
+
+    try:
+        acl = count_dict['acl']
+    except KeyError:
+        acl = 0
+
+    try:
+        relcl = count_dict['relcl']
+    except KeyError:
+        relcl = 0
+
+    clause_keys = ['nsubj', 'nsubjpass', 'csubj', 'csubjpass']
     clause = 0
     for k in clause_keys:
         if k in count_dict:
@@ -42,37 +83,52 @@ def process_spacy_syntax(spacy_syntax, word_count):
         if k in count_dict:
             cord += count_dict[k]
 
-    dc_keys = ['acl', 'relcl', 'advcl']
+    dc_keys = ['acl', 'relcl', 'advcl', 'ccomp']
     dc = 0
     for k in dc_keys:
         if k in count_dict:
             dc += count_dict[k]
 
-    comp_keys = ['csubj', 'csubjpass', 'ccomp', 'xcomp']
-    comp = 0
-    for k in comp_keys:
-        if k in count_dict:
-            comp += count_dict[k]
-
     # compute the additional syntactic complexity indices
+    T = clause - (adverbclause + relcl + acl)
+    VP = ccomp + clause
+    passives = nsubjpass + csubjpass
     allmod = nmod + omod
-    add3 = (dc + comp + cord)
-    add5 = (dc + comp + cord + nmod + omod)
+    CSTR = (dc + xcomp + cord + nmod + omod)
+    adjcl = acl + relcl
     mls = division(w, s)
+    mlt = division(w, T)
     mlc = division(w, clause)
     c_s = division(clause, s)
-    allmod_s = division(allmod, s)
-    allmod_c = division(allmod, clause)
-    dc_s = division(dc, s)
+    vp_t = division(VP, T)
+    c_t = division(clause, T)
+    t_s = division(T, s)
     co_s = division(cord, s)
-    comp_s = division(comp, s)
-    comp_c = division(comp, clause)
-    add3_s = division(add3, s)
-    add5_s = division(add5, s)
+    co_t = division(cord, T)
+    co_c = division(cord, clause)
+    adv_s = division(adverbclause, s)
+    adv_t = division(adverbclause, T)
+    adv_c = division(adverbclause, clause)
+    adj_s = division(adjcl, s)
+    adj_t = division(adjcl, T)
+    adj_c = division(adjcl, clause)
+    dc_s = division(dc, s)
+    dc_t = division(dc, T)
+    dc_c = division(dc, clause)
+    pass_s = division(passives, s)
+    pass_t = division(passives, T)
+    pass_c = division(passives, clause)
+    allmod_s = division(allmod, s)
+    allmod_t = division(allmod, T)
+    allmod_c = division(allmod, clause)
+    CSTR_s = division(CSTR, s)
+    CSTR_t = division(CSTR, T)
+    CSTR_c = division(CSTR, clause)
 
 
-    return {'w': w, 's': s, 'c': clause, 'nmod': nmod, 'omod': omod, 'allmod':allmod, 'cord': cord, 'dc': dc, 'comp':comp, 'add3':add3, 'add5':add5, 'mls': mls, 'mlc': mlc, 'c_s': c_s,
-            'm_s': allmod_s, 'm_c':allmod_c, 'dc_s':dc_s,'co_s': co_s, 'comp_s': comp_s, 'comp_c':comp_c, 'add3_s':add3_s, 'add5_s':add5_s}
+    return {'w': w, 's': s, 'c': clause, 't-unit':T, 'vp':VP, 'ccomp':ccomp, 'xcomp':xcomp, 'cc': cord, 'advcl':adverbclause, 'acl':acl, 'relcl':relcl, 'adjcl':adjcl, 'nmod': nmod, 'omod': omod, 'allmod':allmod, 'dc': dc,  'pass':passives,
+            'mls': mls, 'mlt':mlt, 'mlc': mlc, 'c_s': c_s, 'vp_t':vp_t, 'c_t':c_t, 't_s': t_s, 'co_s': co_s, 'co_t':co_t, 'co_c':co_c, 'adv_s':adv_s, 'adv_t':adv_t, 'adv_c':adv_c,
+            'adj_s':adj_s, 'adj_t':adj_t, 'adj_c':adj_c, 'dc_s':dc_s, 'dc_t':dc_t, 'dc_c':dc_c, 'pass_s':pass_s, 'pass_t':pass_t, 'pass_c':pass_c, 'allmod_s':allmod_s, 'allmod_t':allmod_t, 'allmod_c':allmod_c, 'CSTR_s':CSTR_s, 'CSTR_t':CSTR_t, 'CSTR_c':CSTR_c}
 
 
 def process_spacy(input_text, filename):
