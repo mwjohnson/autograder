@@ -18,75 +18,50 @@ def write2csv(grade_output):
 
 
 def calculate_g3(score):
-    w = score['syntax']['w']
-    cvs1 = score['scores']['cvs1']
     ndw = score['scores']['ndw']
-    cttr = score['scores']['cttr']
-    cvv1 = score['scores']['cvv1']
-    argd = score['argument_scores']['arg_den']
-    mlsubj = score['syntax']['mlc']
-    add3 = score['syntax']['Add3']
+    svv1 = score['scores']['svv1']
+    mls = score['syntax']['mls']
+    mlc = score['syntax']['mlc']
+    cstr = score['syntax']['CSTR_c']
 
-    if w > 115:
-        w_score = 3
-    elif w > 85:
-        w_score = 2
-    else:
-        w_score = 1
-
-    if cvs1 > 0.64:
-        cvs1_score = 3
-    elif cvs1 > 0.44:
-        cvs1_score = 2
-    else:
-        cvs1_score = 1
-
-    if ndw > 75:
+    if ndw > 80:
         ndw_score = 3
-    elif ndw > 61:
-        ndw_score = 2
+    elif ndw > 52:
+        ndw_score = 2+((ndw-66)/14)
     else:
         ndw_score = 1
 
-    if cttr > 4.8:
-        cttr_score = 3
-    elif cttr > 4.2:
-        cttr_score = 2
+    if svv1 > 12.2:
+        svv1_score = 3
+    elif svv1 > 9.8:
+        svv1_score = 2+((svv1-11)/1.2)
     else:
-        cttr_score = 1
+        svv1_score = 1
 
-    if cvv1 > 2.55:
-        cvv1_score = 3
-    elif cvv1 > 2.25:
-        cvv1_score = 2
+    if mls > 17:
+        mls_score = 3
+    elif mls > 11:
+        mls_score = 2+((mls-14)/3)
     else:
-        cvv1_score = 1
+        mls_score = 1
 
-    if argd > 0.5:
-        argd_score = 3
-    elif argd > -0.5:
-        argd_score = 2
+    if mlc > 9.6:
+        mlc_score = 3
+    elif mlc > 7.2:
+        mlc_score = 2+((mlc-8.4)/1.2)
     else:
-        argd_score = 1
+        mlc_score = 1
 
-    if mlsubj > 10:
-        mlsubj_score = 3
-    elif mlsubj > 6:
-        mlsubj_score = 2
-    else:
-        mlsubj_score = 1
-
-    if add3 > 5:
+    if cstr > 2.74:
         add3_score = 3
-    elif add3 > 3:
-        add3_score = 2
+    elif cstr > 1.46:
+        add3_score = 2+((cstr-2.1)/0.64)
     else:
         add3_score = 1
 
-    summed_score = (w_score * 0.04) + (cvs1_score * 0.06) + (ndw_score * 0.13) + (cttr_score * 0.05) + (
-                cvv1_score * 0.32) + (argd_score * 0.03) + (mlsubj_score * 0.32) + (add3_score * 0.05)
+    summed_score = (ndw_score * 0.8082) + (svv1_score * 0.0431) + (mls_score * 0.0742) + (mlc_score * 0.0598) + (add3_score * 0.0148)
 
-    if summed_score >= 2:
+    if summed_score >= 1.788:
         g3score = 4
     else:
         g3score = 3
@@ -95,75 +70,69 @@ def calculate_g3(score):
 
 
 def calculate_g2(score):
-    w = score['syntax']['w']
     cvs1 = score['scores']['cvs1']
     ndw = score['scores']['ndw']
     cttr = score['scores']['cttr']
-    cvv1 = score['scores']['cvv1']
-    argd = score['argument_scores']['arg_den']
-    subj = score['syntax']['Subj']
-    add3 = score['syntax']['Add3']
+    w = score['syntax']['w']
+    mls = score['syntax']['mls']
+    c_t = score['syntax']['c_t']
+    arg = score['argument_scores']['arg']
+    c = score['syntax']['c']
+    c2sdm_c = arg - (arg/c)
 
-    if w > 85:
-        w_score = 3
-    elif w > 65:
-        w_score = 2
-    else:
-        w_score = 1
-
-    if cvs1 > 0.495:
+    if cvs1 > 0.645:
         cvs1_score = 3
-    elif cvs1 > 0.295:
-        cvs1_score = 2
+    elif cvs1 > 0.145:
+        cvs1_score = 2+((cvs1-.395)/.25)
     else:
         cvs1_score = 1
 
-    if ndw > 61:
+    if ndw > 57:
         ndw_score = 3
-    elif ndw > 39:
-        ndw_score = 2
+    elif ndw > 41:
+        ndw_score = 2+((ndw-49)/8)
     else:
         ndw_score = 1
 
-    if cttr > 4.3:
+    if cttr > 4.375:
         cttr_score = 3
-    elif cttr > 3.7:
-        cttr_score = 2
+    elif cttr > 3.625:
+        cttr_score = 2+((cttr-4)/0.375)
     else:
         cttr_score = 1
 
-    if cvv1 > 2.3:
-        cvv1_score = 3
-    elif cvv1 > 2.1:
-        cvv1_score = 2
+    if w > 87:
+        w_score = 3
+    elif w > 57:
+        w_score = 2+((w-72)/15)
     else:
-        cvv1_score = 1
+        w_score = 1
 
-    if argd > -.8:
-        argd_score = 3
-    elif argd > -2.2:
-        argd_score = 2
+    if mls > 14:
+        mls_score = 3
+    elif mls > 9:
+        mls_score = 2+((mls-11.5)/2.5)
     else:
-        argd_score = 1
+        mls_score = 1
 
-    if subj > 13:
-        subj_score = 3
-    elif subj > 9:
-        subj_score = 2
+    if c_t > 1.88:
+        c_t_score = 3
+    elif c_t > 1.08:
+        c_t_score = 2+((c_t-1.48)/0.4)
     else:
-        subj_score = 1
+        c_t_score = 1
 
-    if add3 > 3:
-        add3_score = 3
-    elif add3 > 1:
-        add3_score = 2
+    if c2sdm_c > 2.8:
+        arg_score = 3
+    elif c2sdm_c > 0.8:
+        arg_score = 2+((c2sdm_c-1.8)/1)
     else:
-        add3_score = 1
+        arg_score = 1
 
-    summed_score = (w_score * 0.18) + (cvs1_score * 0.35) + (ndw_score * 0.02) + (cttr_score * 0.13) + (
-                cvv1_score * 0.18) + (argd_score * 0.06) + (subj_score * 0.02) + (add3_score * 0.06)
+    summed_score = (w_score * 0.3864) + (cvs1_score * 0.1604) + (ndw_score * 0.1671) + (cttr_score * 0.1604) + \
+                   (arg_score * 0.008) + (c_t_score * 0.0441) + (mls_score * 0.0735)
 
-    if summed_score > 1.5:
+    if summed_score >= 1.63:
         g2score = 3
     else:
         g2score = 2
