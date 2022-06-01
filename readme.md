@@ -36,7 +36,9 @@ found here: http://www.personal.psu.edu/xxl13/downloads/lca.html
 
 Citation:
 Lu, X. (2010). Automatic analysis of syntactic complexity in second language writing. International Journal of Corpus Linguistics, 15(4), 474–496. https://doi.org/10.1075/ijcl.15.4.02lu
+
 Lu, X. (2012). The relationship of lexical richness to the quality of ESL learners’ oral narratives. The Modern Language Journal, 96(2), 190-208.
+
 Spring, R., & Johnson, M.W. (2022). The possibility of improving automated calculation of measures of lexical richness for EFL writing: A comparison of the LCA, NLTK, and SpaCy tools. System, 106, 770-786. https://doi.org/10.1016/j.system.2022.102770
 
 ## How to Use
@@ -74,8 +76,11 @@ Link to Lu's Programs:
 
 Citations:
 u, X. (2010). Automatic analysis of syntactic complexity in second language writing. International Journal of Corpus Linguistics, 15(4), 474–496. https://doi.org/10.1075/ijcl.15.4.02lu
+
 Lu, X. (2012). The relationship of lexical richness to the quality of ESL learners’ oral narratives. The Modern Language Journal, 96(2), 190-208.
+
 Kyle, K., & Crossley, S. A. (2018). Measuring syntactic complexity in L2 writing using fine-grained clausal and phrasal indices. Modern Language Journal, 102(2), 333–349.
+
 Spring, R., & Johnson, M.W. (2022). The possibility of improving automated calculation of measures of lexical richness for EFL writing: A comparison of the LCA, NLTK, and SpaCy tools. System, 106, 770-786. https://doi.org/10.1016/j.system.2022.102770
 
 
