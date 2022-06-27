@@ -76,7 +76,7 @@ def calculate_g2(score):
     w = score['syntax']['w']
     mls = score['syntax']['mls']
     c_t = score['syntax']['c_t']
-    arg = score['argument_scores']['arg']
+    arg = score['argument_scores']['arg_cnt']
     c = score['syntax']['c']
     c2sdm_c = arg - (arg/c)
 
