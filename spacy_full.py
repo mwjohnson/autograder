@@ -17,7 +17,6 @@ def process_spacy_syntax(spacy_syntax, word_count):
     count_dict = dict(Counter(spacy_syntax))
     w = word_count
     s = count_dict['ROOT']
-    nsubj = count_dict['nsubj']
 
     try:
         nsubjpass = count_dict['nsubjpass']
@@ -126,7 +125,7 @@ def process_spacy_syntax(spacy_syntax, word_count):
     CSTR_c = division(CSTR, clause)
 
 
-    return {'w': w, 's': s, 'c': clause, 't-unit':T, 'vp':VP, 'ccomp':ccomp, 'xcomp':xcomp, 'cc': cord, 'advcl':adverbclause, 'acl':acl, 'relcl':relcl, 'adjcl':adjcl, 'nmod': nmod, 'omod': omod, 'allmod':allmod, 'dc': dc,  'pass':passives,
+    return {'w': w, 's': s, 'c': clause, 't-unit':T, 'vp':VP, 'ccomp':ccomp, 'xcomp':xcomp, 'cc': cord, 'advcl':adverbclause, 'acl':acl, 'relcl':relcl, 'adjcl':adjcl, 'nmod': nmod, 'omod': omod, 'allmod':allmod, 'dc': dc,  'pass':passives, 'CSTR':CSTR,
             'mls': mls, 'mlt':mlt, 'mlc': mlc, 'c_s': c_s, 'vp_t':vp_t, 'c_t':c_t, 't_s': t_s, 'co_s': co_s, 'co_t':co_t, 'co_c':co_c, 'adv_s':adv_s, 'adv_t':adv_t, 'adv_c':adv_c,
             'adj_s':adj_s, 'adj_t':adj_t, 'adj_c':adj_c, 'dc_s':dc_s, 'dc_t':dc_t, 'dc_c':dc_c, 'pass_s':pass_s, 'pass_t':pass_t, 'pass_c':pass_c, 'allmod_s':allmod_s, 'allmod_t':allmod_t, 'allmod_c':allmod_c, 'CSTR_s':CSTR_s, 'CSTR_t':CSTR_t, 'CSTR_c':CSTR_c}
 

@@ -43,7 +43,7 @@ def prepare_all(input_text):
     n = 3
     scores = []
     # provide 3-grams through 7-grams. Can be modified by amending above and/or below line.
-    while n < 8:
+    while n < 7:
         source_count, counts = ngram(original_text, input_text, n)
         scores.append(f'{source_count}')  # str(source_count)
         n = n + 1
