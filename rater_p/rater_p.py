@@ -18,124 +18,142 @@ def write2csv(grade_output):
 
 
 def calculate_g3(score):
-    ndw = score['scores']['ndw']
-    svv1 = score['scores']['svv1']
+    slex = score['scores']['slextypes']
+    cttr = score['scores']['cttr']
     mls = score['syntax']['mls']
     mlc = score['syntax']['mlc']
-    cstr = score['syntax']['CSTR_c']
+    cstr = score['syntax']['CSTR_t']
+    sframe = score['phrase']['SFraming']
+    arg = score['argument_scores']['arg_cnt']
+    c = score['syntax']['c']
+    c2sdm_c = arg - (arg/c)
 
-    if ndw > 80:
-        ndw_score = 3
-    elif ndw > 52:
-        ndw_score = 2+((ndw-66)/14)
+    if slex > 14.9:
+        slex_score = 3
+    elif slex >5.1:
+        slex_score = 2+((slex-10)/4.9)
     else:
-        ndw_score = 1
+        slex_score = 1
 
-    if svv1 > 12.2:
-        svv1_score = 3
-    elif svv1 > 9.8:
-        svv1_score = 2+((svv1-11)/1.2)
+    if cttr > 5.3:
+        cttr_score = 3
+    elif cttr > 4.3:
+        cttr_score = 2+((cttr-4.8)/0.5)
     else:
-        svv1_score = 1
+        cttr_score = 1
 
-    if mls > 17:
+    if mls > 22.7:
         mls_score = 3
-    elif mls > 11:
-        mls_score = 2+((mls-14)/3)
+    elif mls > 14.3:
+        mls_score = 2+((mls-18.5)/4.2)
     else:
         mls_score = 1
 
     if mlc > 9.6:
         mlc_score = 3
-    elif mlc > 7.2:
-        mlc_score = 2+((mlc-8.4)/1.2)
+    elif mlc > 6.8:
+        mlc_score = 2+((mlc-8.4)/1.4)
     else:
         mlc_score = 1
 
-    if cstr > 2.74:
-        add3_score = 3
-    elif cstr > 1.46:
-        add3_score = 2+((cstr-2.1)/0.64)
+    if cstr > 5.9:
+        cstr_score = 3
+    elif cstr > 2.5:
+        cstr_score = 2+((cstr-4.2)/1.7)
     else:
-        add3_score = 1
+        cstr_score = 1
 
-    summed_score = (ndw_score * 0.8082) + (svv1_score * 0.0431) + (mls_score * 0.0742) + (mlc_score * 0.0598) + (add3_score * 0.0148)
-
-    if summed_score >= 1.788:
-        g3score = 4
+    if c2sdm_c > 6.2:
+        arg_score = 3
+    elif c2sdm_c > 2.8:
+        arg_score = 2+((c2sdm_c-4.5)/1.7)
     else:
+        arg_score = 1
+
+    if sframe > 4.5:
+        sframe_score = 3
+    elif sframe > 1.5:
+        sframe_score = 2+((sframe-3)/1.5)
+    else:
+        sframe_score = 1
+
+    summed_score = (slex_score * 7.5) + (cttr_score * 24.8) + (mls_score * 14.97) + (mlc_score * 3.29) + (cstr_score * 10.96) + (arg_score * 21.43) + (sframe_score * 17.04)
+
+    if summed_score > 190:
         g3score = 3
+    else:
+        g3score = 2
 
     return g3score
 
 
 def calculate_g2(score):
-    cvs1 = score['scores']['cvs1']
-    ndw = score['scores']['ndw']
+    cvv1 = score['scores']['cvv1']
     cttr = score['scores']['cttr']
     w = score['syntax']['w']
     mls = score['syntax']['mls']
-    c_t = score['syntax']['c_t']
+    mlc = score['syntax']['mlc']
+    sframe = score['phrase']['SFraming']
     arg = score['argument_scores']['arg_cnt']
     c = score['syntax']['c']
     c2sdm_c = arg - (arg/c)
 
-    if cvs1 > 0.645:
-        cvs1_score = 3
-    elif cvs1 > 0.145:
-        cvs1_score = 2+((cvs1-.395)/.25)
+    if cvv1 > 2.7:
+        cvv1_score = 3
+    elif cvv1 > 1.9:
+        cvv1_score = 2+((cvv1-2.3)/0.4)
     else:
-        cvs1_score = 1
+        cvv1_score = 1
 
-    if ndw > 57:
-        ndw_score = 3
-    elif ndw > 41:
-        ndw_score = 2+((ndw-49)/8)
-    else:
-        ndw_score = 1
-
-    if cttr > 4.375:
+    if cttr > 4.9:
         cttr_score = 3
-    elif cttr > 3.625:
-        cttr_score = 2+((cttr-4)/0.375)
+    elif cttr > 3.9:
+        cttr_score = 2+((cttr-4.4)/0.5)
     else:
         cttr_score = 1
 
-    if w > 87:
+    if w > 133:
         w_score = 3
-    elif w > 57:
-        w_score = 2+((w-72)/15)
+    elif w > 77:
+        w_score = 2+((w-105)/28)
     else:
         w_score = 1
 
-    if mls > 14:
+    if mls > 20:
         mls_score = 3
-    elif mls > 9:
-        mls_score = 2+((mls-11.5)/2.5)
+    elif mls > 10:
+        mls_score = 2+((mls-15)/5)
     else:
         mls_score = 1
 
-    if c_t > 1.88:
-        c_t_score = 3
-    elif c_t > 1.08:
-        c_t_score = 2+((c_t-1.48)/0.4)
+    if mlc > 9.4:
+        mlc_score = 3
+    elif mlc > 6.4:
+        mlc_score = 2+((mlc-7.9)/1.5)
     else:
-        c_t_score = 1
+        mlc_score = 1
 
-    if c2sdm_c > 2.8:
+    if c2sdm_c > 4.5:
         arg_score = 3
-    elif c2sdm_c > 0.8:
-        arg_score = 2+((c2sdm_c-1.8)/1)
+    elif c2sdm_c > 1.5:
+        arg_score = 2+((c2sdm_c-3)/1.5)
     else:
         arg_score = 1
 
-    summed_score = (w_score * 0.3864) + (cvs1_score * 0.1604) + (ndw_score * 0.1671) + (cttr_score * 0.1604) + \
-                   (arg_score * 0.008) + (c_t_score * 0.0441) + (mls_score * 0.0735)
-
-    if summed_score >= 1.63:
-        g2score = 3
+    if sframe > 2:
+        sframe_score = 3
+    elif sframe > 0:
+        sframe_score = 2+((sframe-1)/1)
     else:
+        sframe_score = 0
+
+
+    summed_score = (w_score * 45.12) + (cvv1_score * 16.78) + (cttr_score * 19.51) + (mls_score * 11.86) + (mlc_score * 1.99) + (arg_score * 3.25) + (sframe_score * 1.5)
+
+    if summed_score >= 168:
         g2score = 2
+    else:
+        g2score = 1
 
     return g2score
 
@@ -155,10 +173,10 @@ def grademe(pre_scores):
         filename = score['scores']['filename']
 
         if w < 50:
-            post_p = 1
+            post_p = 0
         else:
             g2 = calculate_g2(score)
-            if g2 == 2:
+            if g2 == 1:
                 post_p = g2
             else:
                 post_p = calculate_g3(score)

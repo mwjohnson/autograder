@@ -89,7 +89,7 @@ def process_spacy_syntax(spacy_syntax, word_count):
             dc += count_dict[k]
 
     # compute the additional syntactic complexity indices
-    T = clause - (adverbclause + relcl + acl)
+    T = s + ccomp
     VP = ccomp + clause
     passives = nsubjpass + csubjpass
     allmod = nmod + omod
@@ -129,6 +129,170 @@ def process_spacy_syntax(spacy_syntax, word_count):
             'mls': mls, 'mlt':mlt, 'mlc': mlc, 'c_s': c_s, 'vp_t':vp_t, 'c_t':c_t, 't_s': t_s, 'co_s': co_s, 'co_t':co_t, 'co_c':co_c, 'adv_s':adv_s, 'adv_t':adv_t, 'adv_c':adv_c,
             'adj_s':adj_s, 'adj_t':adj_t, 'adj_c':adj_c, 'dc_s':dc_s, 'dc_t':dc_t, 'dc_c':dc_c, 'pass_s':pass_s, 'pass_t':pass_t, 'pass_c':pass_c, 'allmod_s':allmod_s, 'allmod_t':allmod_t, 'allmod_c':allmod_c, 'CSTR_s':CSTR_s, 'CSTR_t':CSTR_t, 'CSTR_c':CSTR_c}
 
+def process_phrase(spacy_deps, spacy_pos, spacy_heads, spacy_words, spacy_children, spacy_lemmas):
+    """
+    Creates phrasal complexity measures based on Kyle (2016) and Kyle & Crossley (2018). Specifically, going after
+    Av_nom_deps_NN, Prep_pobj_deps_NN, and Pobj_NN_SD (as of 10/14/2022) because though TAASSC (Kyle, 2016) offer a lot
+    of measures, this program just focuses on a few that are indicative of L2 proficiency for L1 Japanese EFL learners,
+    and so far these are consistently correlated with both as per (forthcoming paper). The NN means that pronouns and
+    proper nouns are discluded from the counts.
+    Also, does a rough calculation of Satellite-Framing, which can be considered a type of phrasal complexity.
+    :param spacy_deps:
+    :return:
+    """
+
+    def stdev(data):
+        """
+        Calculates standard deviation of a data set. Would rather write it than wazawaza import just for this
+        :param data:
+        :return:
+        """
+        n = len(data)
+        if n == 0 or n == 1:
+            return 0
+
+        else:
+            mean = sum(data) / n
+            dev = [(x - mean) ** 2 for x in data]
+            variance = sum(dev) / (n - 1)
+            mystdev = variance ** 0.5
+            return mystdev
+
+    def safe_avg(data):
+        n = len(data)
+        if n == 0:
+            return 0
+        else:
+            mean = sum(data) / n
+            return mean
+
+    nom_deps = 0
+    phrase_deps = []
+    phrases = 0
+    pobj = 0
+    pobj_deps = []
+    pobj_prep_deps = []
+    preps = []
+    prep_pobj = 0
+    prep_pobj2 = 0
+    stative_verbs = ["be", "exist", "appear", "feel", "hear", "look", "see", "seem", "belong", "have", "own", "possess",
+                     "like", "live", "want", "wish", "prefer", "love", "hate", "make", "become", "meet", "depend",
+                     "fit", "touch", "matter", "lay", "lie", "find"]
+    satellites = ["aboard", "above", "across", "after", "against", "ahead", "along", "amid", "among",
+                  "amongst", "around", "aside", "away", "back", "before", "behind", "below", "beneath", "beside",
+                  "between", "beyond", "down", "in", "inside", "into", "near", "off", "on", "onto", "opposite",
+                  "out", "outside", "over", "past", "through", "toward", "towards", "together", "under",
+                  "underneath", "up", "upon"]
+    likely_dates = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
+                    "November", "December", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday",
+                    "Sunday"]
+    satellite_framings = 0
+    verbs = 0
+    list_o_verbs = []
+    list_o_vb_lemmas = []
+
+    for i in range(0, len(spacy_pos)):
+        pos = spacy_pos[i]
+        verb_lemma = spacy_lemmas[i]
+        verb = spacy_words[i]
+        if pos == "VERB":
+            list_o_verbs.append(verb)
+            list_o_vb_lemmas.append(verb_lemma)
+
+
+    for i in range(0, len(spacy_deps)):
+        dep = spacy_deps[i]
+        pos = spacy_pos[i]
+        word = spacy_words[i]
+        head = spacy_heads[i]
+        head = f'{head}'
+
+        if pos == "VERB":
+            verbs += 1
+
+        if dep in ["nsubj", "nsubjpass", "agent", "ncomp", "dobj", "iobj", "pobj"] and pos == "NOUN":
+            phrases += 1
+            counter = 0
+            tempkids = []
+            for x in spacy_children[i]:
+                tempkids.append(f'{x}')
+            for child in tempkids:
+                for x in range(0, len(spacy_deps)):
+                    word_match = spacy_words[x]
+                    dep_match = spacy_deps[x]
+                    if word_match == child:
+                        if dep_match in ["det", "amod", "prep", "poss", "vmod", "nn", "rcmod", "advmod", "conj_and", "conj_or"]:
+                            counter += 1
+                            break
+            phrase_deps.append(counter)
+
+        if dep == "pobj" and pos == "NOUN":
+            pobj += 1
+            tempdesp = []
+            counter = 0
+            counter2 = 0
+            for x in spacy_children[i]:
+                tempdesp.append(f'{x}')
+            for child in tempdesp:
+                for x in range(0, len(spacy_deps)):
+                        word_match = spacy_words[x]
+                        dep_match = spacy_deps[x]
+                        if word_match == child:
+                            if dep_match in ["det", "amod", "prep", "poss", "vmod", "nn", "rcmod", "advmod", "conj_and", "conj_or"]:
+                                counter += 1
+                            if dep_match == "prep":
+                                prep_pobj += 1
+                                counter2 += 1
+                            break
+            pobj_deps.append(counter)
+            pobj_prep_deps.append(counter2)
+
+        if pos == "ADJ": #handles adjectives as satellites
+            if head in list_o_verbs:
+                for y in range(0, len(list_o_verbs)):
+                    word_match = list_o_verbs[y]
+                    word_lemma = list_o_vb_lemmas[y]
+                    if word_match == head and word_lemma not in stative_verbs:
+                        x = 0
+                        while x < i:
+                            double_match = spacy_words[x]
+                            if head == double_match:
+                                satellite_framings += 1
+                                break
+                            else:
+                                x += 1
+
+
+        if pos == "ADP" and word in satellites: #handles most satellites
+            if head in satellites:
+                satellite_framings += 1
+            elif head in list_o_verbs:
+                if word in ["in", "into", "on", "onto"]:
+                    if spacy_words[i+1] not in likely_dates and spacy_pos[i+1] != "NUM" and spacy_pos[i+1] != "PROPN":
+                        for y in range(0, len(list_o_verbs)):
+                            word_match = list_o_verbs[y]
+                            word_lemma = list_o_vb_lemmas[y]
+                            if word_match == head and word_lemma not in stative_verbs:
+                                satellite_framings += 1
+                                break
+
+        if pos == "ADV" and word in satellites: #handles particles marked as adverbs as satellites
+            if head in satellites:
+                satellite_framings += 1
+            elif head in list_o_verbs:
+                for y in range(0, len(list_o_verbs)):
+                    word_match = list_o_verbs[y]
+                    word_lemma = list_o_vb_lemmas[y]
+                    if word_match == head and word_lemma not in stative_verbs:
+                        satellite_framings += 1
+                        break
+
+
+    av_nom_deps_NN = safe_avg(phrase_deps)
+    Prep_pobj_deps_NN = safe_avg(pobj_prep_deps)
+    Pobj_NN_SD = stdev(pobj_deps)
+
+    return {'AvgNomDeps_NN': av_nom_deps_NN, 'Prep_PobjDeps_NN': Prep_pobj_deps_NN, 'Pobj_NN_Sd': Pobj_NN_SD, 'SFraming': satellite_framings}
 
 def process_spacy(input_text, filename):
     """
@@ -142,6 +306,24 @@ def process_spacy(input_text, filename):
     nlp = spacy.load("en_core_web_lg")
     spacy_tokens = nlp(input_text)
     spacy_syntax = []
+    spacy_deps = []
+    spacy_pos = []
+    spacy_heads = []
+    spacy_words = []
+    spacy_children = []
+    spacy_lemmas = []
+
+    for idx, token in enumerate(spacy_tokens):
+        spacy_words.append(spacy_tokens[idx].text)
+        spacy_lemmas.append(spacy_tokens[idx].lemma_)
+        spacy_pos.append(spacy_tokens[idx].pos_)
+        spacy_deps.append(spacy_tokens[idx].dep_)
+        spacy_heads.append(spacy_tokens[idx].head)
+        kids = []
+        for x in spacy_tokens[idx].children:
+            kids.append(x)
+        spacy_children.append(kids)
+
     for idx, token in enumerate(spacy_tokens):
         spacy_word = spacy_tokens[idx].text
         spacy_tag = spacy_tokens[idx].tag_
@@ -153,7 +335,8 @@ def process_spacy(input_text, filename):
     word_count = len([token for token in spacy_tokens if
                       token.is_alpha or token.shape_ == 'dd'])  # dd is spacy's definition for digits.
     spacy_syntax_results = process_spacy_syntax(spacy_syntax, word_count)
-    return spacy_scores, spacy_syntax_results
+    spacy_phrase_results = process_phrase(spacy_deps, spacy_pos, spacy_heads, spacy_words, spacy_children, spacy_lemmas)
+    return spacy_scores, spacy_syntax_results, spacy_phrase_results
 
 
 def build_header(scores):
@@ -212,10 +395,10 @@ def process(file_path: str, filename: str, arg_counter: ArgCounter):
     """
     text_lines = read_input_text(file_path)
     input_text = ''.join(text_lines)
-    spacy_scores, spacy_syntax_results = process_spacy(input_text, filename)
+    spacy_scores, spacy_syntax_results, spacy_phrase_results = process_spacy(input_text, filename)
     arg_count, details = arg_counter.count_arguments(input_text)
     argument_scores = process_arguments(arg_count, spacy_syntax_results['w'])
-    return {'scores': spacy_scores, 'syntax': spacy_syntax_results, 'argument_scores': argument_scores}
+    return {'scores': spacy_scores, 'syntax': spacy_syntax_results, 'argument_scores': argument_scores, 'phrase': spacy_phrase_results}
 
 
 def main(input_path):
